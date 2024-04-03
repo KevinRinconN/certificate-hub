@@ -47,8 +47,15 @@ public class JwtFilter extends OncePerRequestFilter {
             return;
         }
 
+
         String username = this.jwtUtil.getUsername(jwt);
         User user = (User) this.userDetailsService.loadUserByUsername(username);
+
+        if (!user.isAccountNonLocked() || !user.isEnabled()) {
+
+            filterChain.doFilter(request,response);
+            return;
+        }
 
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword(), user.getAuthorities());
         authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
